@@ -3,7 +3,8 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-
+const userRoutes=require('./src/route/app.routes')
+const adminRoutes=require('./src/route/dashboard.routes')
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
@@ -32,18 +33,13 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Serve Uploaded Images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Create HTTP server for socket.io
+
 const server = http.createServer(app);
-
-// Integrate socket.io
-
-
-
-
 
 
 // User Routes
-//app.use('/user', userRoutes);
+app.use('/user', userRoutes);
+app.use('/admin',adminRoutes)
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
