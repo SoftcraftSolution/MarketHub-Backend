@@ -37,6 +37,10 @@ const registrationSchema = new mongoose.Schema({
     pin: {
         type: Number
     },
+    isApproved:{
+        type:Boolean,
+        default:false
+    },
 }, { timestamps: true });
 
 // Create the model from the schema

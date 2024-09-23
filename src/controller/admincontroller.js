@@ -1,7 +1,9 @@
 const Admin = require('../model/admin.model');
+const User=require('../model/user.model')
 const fetch = require('node-fetch'); // Ensure you have node-fetch installed
 const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
 const responseStructure = require('../middleware/response');
+const mongoose = require('mongoose');
 
 // Generate a random OTP (between 1000 and 9999)
 const generateOTP = () => {
@@ -103,3 +105,64 @@ exports.verifyOTPAdmin = async (req, res) => {
         return response.error(res, error.message);
     }
 };
+exports.approveAdmin = async (req, res) => {
+    const { id } = req.query; // Get the admin ID from the query
+    const { isApproved } = req.body; // Get the approval status from the body
+
+    try {
+        // Log the admin ID
+        console.log("Admin ID:", id);
+
+        // Validate ObjectId
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: 'Invalid Admin ID' });
+        }
+
+        // Check if admin exists
+        const userExists = await User.findById(id);
+        console.log("User found:", userExists); // Log the found user
+
+        if (!userExists) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update the user document
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { isApproved }, // Update isApproved status
+            { new: true, runValidators: true } // Return the updated document
+        );
+
+        // Log the updated user
+        console.log("Updated User:", updatedUser);
+
+        // Respond with success message and updated user
+        res.status(200).json({
+            message: 'User approval status updated successfully',
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(400).send({ message: error.message });
+    }
+};
+
+exports.getUserList = async (req, res) => {
+    try {
+        // Retrieve all users from the database
+        const users = await User.find();
+
+        // Respond with the list of users
+        res.status(200).json({
+            message: 'User list retrieved successfully',
+            users: users
+        });
+    } catch (error) {
+        console.error("Error fetching user list:", error);
+        res.status(500).json({ message: 'Error fetching user list' });
+    }
+};
+
+
+
+
