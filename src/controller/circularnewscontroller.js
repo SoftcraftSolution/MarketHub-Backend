@@ -1,51 +1,54 @@
-const CircularNews= require('../model/circularnews.model');
+const CircularNews = require('../model/circularnews.model');
 const cloudinary = require('cloudinary').v2;
-const fetch = require('node-fetch'); // Ensure you have node-fetch installed
-
-const response = require('../middleware/response')
+const multer = require('multer');
 const Admin = require('../model/admin.model'); 
+
+
+
 
 exports.CircularNews = async (req, res) => {
     try {
         // Extract data from request body
-        const { addTitle, addContent, addLink, adminPhoneNumber, shareNews } = req.body;
-
-        // Validate input fields
-        if (!addTitle || !addContent || !adminPhoneNumber) {
-            return res.status(400).json({ message: 'Title, content, and phone number are required.' });
-        }
-
-        // Optional: Check if the admin exists
-        const admin = await Admin.findOne({ phoneNumber: adminPhoneNumber });
-        if (!admin) {
-            return res.status(404).json({ message: 'Admin not found.' });
-        }
-
-        // Ensure shareNews is an array
-        const shareNewsArray = Array.isArray(shareNews) ? shareNews : JSON.parse(shareNews);
-
+        const { addTitle, addContent, addLink, adminPhoneNumber ,shareNews} = req.query;
+      
+          const shareNewsArray = JSON.parse(shareNews);
+        
+          console.log('Uploaded file:', req.file);
+          console.log('Request body:', req.body);
+        console.log(typeof(shareNewsArray),"shareNews")
         // Create a new CircularNews document
-        const newCircularNews = new CircularNews({
+        const newAddCircular = new CircularNews({
             addTitle,
             addContent,
             addLink,
-            image: req.file && req.file.fieldname === 'image' ? req.file.path : null, // Handle image if uploaded
-            pdf: req.files && req.files.fieldname === 'pdf' ? req.files.path : null, // Handle PDF if uploaded
             adminPhoneNumber,
-            shareNews: shareNewsArray, // Save the shareNews array
+            shareNews:shareNewsArray,
+            image: req.file ? req.file.path : null, // Store the image URL
+          //  pdf: req.file ? req.file.path : null,
         });
-
+       
         // Save the new document to the database
-        await newCircularNews.save();
+        await newAddCircular.save();
 
         // Send a success response
         res.status(201).json({
             message: 'News uploaded successfully',
-            circularNews: newCircularNews,
+            circularNews: {
+                addTitle: newAddCircular.addTitle, // Include the addTitle from the saved document
+                createdAt: newAddCircular.createdAt, // Optionally include other fields like createdAt
+                addContent: newAddCircular.addContent, // Optionally include addContent
+                addLink: newAddCircular.addLink, // Optionally include addLink
+                adminPhoneNumber: newAddCircular.adminPhoneNumber,
+                shareNews :newAddCircular.shareNews,// Optionally include adminPhoneNumber
+                image: newAddCircular.image, // Include image URL
+               // pdf: newAddCircular.pdf // Include PDF URL
+            }
         });
+    
     } catch (error) {
         console.error('Error while adding circular news:', error); // Log the error for debugging
-        res.status(500).json({ message: 'An error occurred while uploading circular news.' });
+        res.status(500).json({ message: 'An error occurred while uploading news.' });
     }
 };
+
 

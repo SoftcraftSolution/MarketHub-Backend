@@ -11,7 +11,14 @@ router.get('/approved-user',adminController.approveAdmin)
 router.get('/user-list',adminController.getUserList)
 
 //NEWS SECTION API
+
+
+const multer = require('multer');
+
+// Set up multer for file uploads
+
 router.post('/add-self-news',uploadImage ,selfController.addSelfNews)
-router.post('/circular-news', uploadImage, uploadPdf, circularController.CircularNews);
+
+router.post('/circular-news', uploadImage, circularController.CircularNews);
 
 module.exports = router;
