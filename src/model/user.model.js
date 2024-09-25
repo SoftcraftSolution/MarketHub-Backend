@@ -29,18 +29,36 @@ const registrationSchema = new mongoose.Schema({
     },
     visitingCard: {
         type: String, // URL or path to the uploaded file
-
     },
     otp: {
         type: String,
     },
     pin: {
-        type: Number
+        type: Number,
     },
-    isApproved:{
-        type:Boolean,
-        default:false
+    isApproved: {
+        type: Boolean,
+        default: false
     },
+    planName: {
+        type: String,
+        enum: ['freeTrial', 'standard', 'premium', 'basic'],
+    },
+    status: {
+        type: String,
+        enum: [
+            'freeTrail',
+            'extendedfreeTrial', 
+            'rejected', 
+            'expiredFreeTrial', 
+            'basicPlan', 
+            'expiredBasicPlan', 
+            'standardPlan', 
+            'expiredStandardPlan', 
+            'premiumPlan', 
+            'expiredPremiumPlan'
+        ] // Corrected enum values as strings
+    }
 }, { timestamps: true });
 
 // Create the model from the schema

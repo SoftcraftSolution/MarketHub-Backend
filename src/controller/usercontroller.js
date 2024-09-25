@@ -48,9 +48,8 @@ exports.createRegistration = async (req, res) => {
         // Create a new registration document
         const newRegistration = new Registration({
             ...req.body,
-            visitingCard: req.file.path,
-            otp: otp // Store the Cloudinary URL
-            // Add OTP to the registration (if desired)
+            visitingCard: req.file ? req.file.path : null, // Handle visiting card upload
+            otp: otp // Store the OTP
         });
 
         // Save the registration document
@@ -59,18 +58,19 @@ exports.createRegistration = async (req, res) => {
         // Send OTP to the provided phone number
         await sendOTP(phoneNumber, otp); // Use phoneNumber from request body
         console.log(`Generated OTP for ${phoneNumber}: ${otp}`);
+
         // Respond with the new registration and a success message
         res.status(201).json({
             message: 'Registration successful. OTP sent.',
             registration: newRegistration,
-            otp: otp
-            // Optionally include the OTP in the response
+            otp: otp // Optionally include the OTP in the response
         });
     } catch (error) {
         console.error(error); // Log the error for debugging
         res.status(400).json({ message: error.message });
     }
 };
+
 exports.verifyOTP = async (req, res) => {
     try {
         const { phoneNumber, otp } = req.body;
