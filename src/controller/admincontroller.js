@@ -209,22 +209,28 @@ exports.verifyCode = async (req, res) => {
 
 // Reset Password
 exports.resetPassword = async (req, res) => {
-    const { email, newPassword } = req.body;
-  
-    try {
-      const admin = await Admin.findOne({ email });
-      if (!admin) {
-        return res.status(404).json({ message: 'Admin not found' });
-      }
-  
-      admin.password = newPassword;
-      await admin.save();
-  
-      res.status(200).json({ message: 'Password reset successfully' });
-    } catch (err) {
-      res.status(500).json({ error: 'Error resetting password' });
+  const { email, newPassword } = req.body;
+
+  try {
+    // Find the admin by email
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
     }
-  };
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // 10 is the salt rounds
+
+    // Update the admin's password with the hashed version
+    admin.password = hashedPassword;
+    await admin.save();
+
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (err) {
+    console.error('Error resetting password:', err);
+    res.status(500).json({ error: 'Error resetting password' });
+  }
+};
 
 exports.approveAdmin = async (req, res) => {
     const { id } = req.query; // Get the admin ID from the query
