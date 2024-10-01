@@ -1,9 +1,13 @@
-const Admin = require('../model/admin.model');
-const User=require('../model/user.model')
-const fetch = require('node-fetch'); // Ensure you have node-fetch installed
-const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY;
-const responseStructure = require('../middleware/response');
+const Admin = require('../model/user.model');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+// Ensure you have node-fetch installed
 const mongoose = require('mongoose');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
+const ResetCode = require('../model/resetcode.models'); 
+const token=require('../middleware/token')
 
 // Generate a random OTP (between 1000 and 9999)
 const generateOTP = () => {
@@ -35,76 +39,193 @@ const sendOTP = async (phoneNumber, otp) => {
     }
 };
 
-// Create a new registration
-exports.sendOTPToAdmin = async (req, res) => {
+
+
+
+const generateRandomPassword = () => {
+    return crypto.randomBytes(4).toString('hex'); // Generates an 8-character password
+  };
+  
+  // Configure nodemailer for sending emails
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // You can change this to your email provider
+    auth: {
+      user: process.env.EMAIL_USERNAME, // Your email account
+      pass: process.env.EMAIL_PASSWORD, // Your email account's password
+    },
+  });
+  
+  exports.register = async (req, res) => {
     try {
-        // Extract phoneNumber from request body
-        const { phoneNumber } = req.body;
-
-        // Generate OTP
-        const otp = generateOTP();
-
-        // Create a new Admin document
-        const admin = new Admin({
-            ...req.body,
-            otp: otp // Store the OTP in the admin document
-        });
-
-        // Save the admin document
-        await admin.save();
-
-        // Send OTP to the provided phone number
-        await sendOTP(phoneNumber, otp); // Use phoneNumber from request body
-        console.log(`Generated OTP for ${phoneNumber}: ${otp}`);
-
-        // Respond with a success message
-        res.status(201).json({
-            message: 'Admin created successfully. OTP sent.',
-            otp: otp // Optionally include the OTP in the response (for testing purposes)
-        });
-    } catch (error) {
-        console.error(error); // Log the error for debugging
-        res.status(400).json({ message: error.message });
+      const { email, phoneNumber, access, role } = req.body;
+  
+      // Check if the email is already registered
+      const existingAdmin = await Admin.findOne({ email });
+      if (existingAdmin) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+  
+      // Generate a strong random password
+      const randomPassword = generateRandomPassword();
+  
+      // Hash the password before saving
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+  
+      // Create a new admin
+      const newAdmin = new Admin({
+        email,
+        phoneNumber,
+        access,
+        role, // e.g., 'admin' or 'superadmin'
+        password: hashedPassword, // Save the hashed password
+      });
+  
+      // Save the admin to the database
+      await newAdmin.save();
+  
+      // Send email to the user with the login credentials
+      const mailOptions = {
+        from: process.env.EMAIL_USERNAME, // Your email
+        to: email, // The user's email
+        subject: 'Your Admin Account Credentials',
+        text: `Hello, \n\nYour account has been created successfully. Here are your login credentials:\n\nUsername: ${email}\nPassword: ${randomPassword}\n\nPlease log in and change your password as soon as possible.`,
+      };
+  
+      // Send the email
+      await transporter.sendMail(mailOptions);
+  
+      return res.status(201).json({
+        message: 'Registration successful. Password has been sent to the registered email.',
+        admin: { email, role },
+      });
+    } catch (err) {
+      console.error('Registration error:', err);
+      return res.status(500).json({ message: 'Server error, please try again later' });
     }
-};
-exports.verifyOTPAdmin = async (req, res) => {
+  };
+
+
+// Ensure default admin exists on server start
+
+
+// Login
+exports.login = async (req, res) => {
     try {
-        const { phoneNumber, otp } = req.body;
-
-        console.log(`Received OTP verification request for phoneNumber: ${phoneNumber} with OTP: ${otp}`);
-
-        // Find the registration by phone number
-        const registration = await Admin.findOne({ phoneNumber });
-
-        if (!registration) {
-            console.error(`Registration not found for phoneNumber: ${phoneNumber}`);
-            return response.error(res, 'Registration not found', 404);
-        }
-
-        // Log the stored OTP for comparison (be cautious with logging sensitive data)
-        console.log(`Stored OTP for phoneNumber ${phoneNumber}: ${registration.otp}`);
-
-        // Check if the OTP matches
-        if (registration.otp !== otp) {
-            console.warn(`Invalid OTP provided for phoneNumber: ${phoneNumber}`);
-            return response.error(res, 'Invalid OTP', 400);
-        }
-
-        // If OTP is correct, clear the OTP and save the registration
-
-
-        console.log(`OTP verified successfully for phoneNumber: ${phoneNumber}`);
-
-        res.status(200).json({
-            message: 'otp verifed sucessfully',
-
-            // Optionally include the OTP in the response
-        });
-    } catch (error) {
-        console.error("Error during OTP verification:", error); // Log the error for debugging
-        return response.error(res, error.message);
+      const { email, password } = req.body;
+  
+      // Check if the admin exists
+      const admin = await Admin.findOne({ email });
+      if (!admin) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+  
+      // Compare the provided password with the stored hashed password
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+  
+      // Generate a JWT token with the admin's email and role
+      const token = jwt.sign(
+        { email: admin.email }, // You can also add other fields like role if necessary
+        process.env.JWT_SECRET, // Ensure JWT_SECRET is stored in your .env file
+        { expiresIn: '1h' } // Token expiration time
+      );
+  
+      // Send the token back to the client
+      return res.status(200).json({
+        message: 'Login successful',
+        token,
+      });
+    } catch (err) {
+      console.error('Login error:', err);
+      return res.status(500).json({ message: 'Server error, please try again later' });
     }
+  };
+
+// Forgot Password
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    const resetCode = crypto.randomInt(1000, 9999).toString(); // 4-digit code
+
+    await ResetCode.findOneAndUpdate(
+      { userId: admin._id }, 
+      { userId: admin._id, code: resetCode },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      to: admin.email,
+      from: process.env.EMAIL_FROM,
+      subject: 'Password Reset Code',
+      text: `Your password reset code is: ${resetCode}\n\nIf you did not request this, please ignore this email.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: `An email has been sent to ${admin.email} with the reset code.`,resetCode });
+    
+  } catch (err) {
+    console.error('Error sending password reset email:', err);
+    res.status(500).json({ error: 'Error sending password reset email' });
+  }
 };
+
+// Verify Code
+exports.verifyCode = async (req, res) => {
+  const { email, code } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    const resetCode = await ResetCode.findOne({ userId: admin._id, code });
+    if (!resetCode) {
+      return res.status(400).json({ message: 'Invalid or expired reset code' });
+    }
+
+    res.status(200).json({ message: 'Reset code verified successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error verifying reset code' });
+  }
+};
+
+// Reset Password
+exports.resetPassword = async (req, res) => {
+    const { email, newPassword } = req.body;
+  
+    try {
+      const admin = await Admin.findOne({ email });
+      if (!admin) {
+        return res.status(404).json({ message: 'Admin not found' });
+      }
+  
+      admin.password = newPassword;
+      await admin.save();
+  
+      res.status(200).json({ message: 'Password reset successfully' });
+    } catch (err) {
+      res.status(500).json({ error: 'Error resetting password' });
+    }
+  };
+
 exports.approveAdmin = async (req, res) => {
     const { id } = req.query; // Get the admin ID from the query
     const { isApproved } = req.body; // Get the approval status from the body

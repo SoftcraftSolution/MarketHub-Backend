@@ -1,7 +1,7 @@
 const CircularNews = require('../model/circularnews.model');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
-const Admin = require('../model/admin.model'); 
+const Admin = require('../model/user.model'); 
 
 
 

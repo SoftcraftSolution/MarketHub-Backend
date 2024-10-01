@@ -5,8 +5,12 @@ const { uploadImage, uploadPdf } = require('../middleware/imageupload');
 const selfController=require('../controller/selfcontroller')
 const circularController=require('../controller/circularnewscontroller')
 
-router.post('/send-otp',adminController.sendOTPToAdmin)
-router.post('/verify-otp',adminController.verifyOTPAdmin)
+router.post('/register',adminController.register)
+router.post('/login', adminController.login);
+
+router.post('/forgot-password',adminController.forgotPassword)
+router.post('/verify-code',adminController.verifyCode)
+router.post('/reset-password',adminController.resetPassword)
 router.get('/approved-user',adminController.approveAdmin)
 router.get('/user-list',adminController.getUserList)
 

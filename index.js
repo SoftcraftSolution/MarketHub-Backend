@@ -3,7 +3,7 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const userRoutes=require('./src/route/app.routes')
+
 const adminRoutes=require('./src/route/dashboard.routes')
 const cors = require('cors');
 const path = require('path');
@@ -38,7 +38,7 @@ const server = http.createServer(app);
 
 
 // User Routes
-app.use('/user', userRoutes);
+
 app.use('/admin',adminRoutes)
 
 // Error Handling Middleware

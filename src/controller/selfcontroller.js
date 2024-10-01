@@ -3,7 +3,7 @@ const cloudinary = require('cloudinary').v2;
 const fetch = require('node-fetch'); // Ensure you have node-fetch installed
 
 const response = require('../middleware/response')
-const Admin = require('../model/admin.model'); 
+const Admin = require('../model/user.model'); 
 
 exports.addSelfNews = async (req, res) => {
     try {

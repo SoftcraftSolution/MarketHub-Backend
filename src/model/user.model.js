@@ -1,67 +1,38 @@
 const mongoose = require('mongoose');
 
 // Define the registration schema with timestamps
-const registrationSchema = new mongoose.Schema({
-    fullName: {
+const UserSchema = new mongoose.Schema({
+    email: {
         type: String,
         required: true,
-        trim: true
-    },
-    phoneNumber: {
+        unique: true,
+        lowercase: true,
+        trim: true,
+      },
+      password: {
         type: String,
         required: true,
-        match: [/^\+?[1-9]\d{1,14}$/, 'Please enter a valid phone number']
-    },
-    pincode: {
+      },
+      phoneNumber:{
+        type:String,
+      },
+      role:{
+        type:String,
+        enum: ['admin','superadmin'],
+        default:'admin'
+      },
+      otp: {
         type: String,
-        required: true,
-        trim: true
+        
     },
-    city: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    state: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    visitingCard: {
-        type: String, // URL or path to the uploaded file
-    },
-    otp: {
-        type: String,
-    },
-    pin: {
-        type: Number,
-    },
-    isApproved: {
-        type: Boolean,
-        default: false
-    },
-    planName: {
-        type: String,
-        enum: ['freeTrial', 'standard', 'premium', 'basic'],
-    },
-    status: {
-        type: String,
-        enum: [
-            'freeTrail',
-            'extendedfreeTrial', 
-            'rejected', 
-            'expiredFreeTrial', 
-            'basicPlan', 
-            'expiredBasicPlan', 
-            'standardPlan', 
-            'expiredStandardPlan', 
-            'premiumPlan', 
-            'expiredPremiumPlan'
-        ] // Corrected enum values as strings
+    access:{
+      type:String,
+      enum:['spotPrice','news',"all"]
     }
+
 }, { timestamps: true });
 
 // Create the model from the schema
-const Registration = mongoose.model('Registration', registrationSchema);
+const User = mongoose.model('User', UserSchema);
 
-module.exports = Registration;
+module.exports = User;
