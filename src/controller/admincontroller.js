@@ -277,7 +277,7 @@ exports.approveAdmin = async (req, res) => {
 exports.getUserList = async (req, res) => {
     try {
         // Retrieve all users from the database
-        const users = await User.find();
+        const users = await Admin.find();
 
         // Respond with the list of users
         res.status(200).json({
