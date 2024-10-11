@@ -35,14 +35,19 @@ exports.CircularNews = async (req, res) => {
 
         // Check if PDF file is present and upload to Cloudinary using buffer
         if (req.files['pdf'] && req.files['pdf'][0]) {
-            // Upload PDF buffer to Cloudinary
-            const pdfUploadResponse = await cloudinary.uploader.upload(`data:${req.files['pdf'][0].mimetype};base64,${req.files['pdf'][0].buffer.toString('base64')}`, {
+            const pdfBuffer = req.files['pdf'][0].buffer;
+            
+            // Upload PDF to Cloudinary as raw file
+            const pdfUploadResponse = await cloudinary.uploader.upload(`data:${req.files['pdf'][0].mimetype};base64,${pdfBuffer.toString('base64')}`, {
                 folder: 'pdfs',
-                resource_type: 'raw' // Specify it's a raw file type
+                resource_type: 'raw', // Correct resource type for PDFs and non-image files
+                format: 'pdf' // Ensure it gets stored as a PDF
             });
-            pdfUrl = pdfUploadResponse.secure_url; // Get the PDF URL from the result
+            
+            pdfUrl = pdfUploadResponse.secure_url; // Get the URL to access the PDF
         }
-
+        
+        
         // Log the URLs obtained
         console.log('Uploaded image URL:', imageUrl);
         console.log('Uploaded PDF URL:', pdfUrl);

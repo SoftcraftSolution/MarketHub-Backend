@@ -9,27 +9,28 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Define the storage for images
+// Define storage for images
 const imageStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'images',
         allowed_formats: ['jpg', 'jpeg', 'png'],
-        public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Public ID generation
+        public_id: (req, file) => `${Date.now()}-${file.originalname}`,
     },
 });
 
-// Define the storage for PDFs
+// Define storage for PDFs
 const pdfStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'pdfs',
         allowed_formats: ['pdf'],
+       
         public_id: (req, file) => `${Date.now()}-${file.originalname}`,
     },
 });
 
-// Create a multer instance with both image and pdf upload capabilities
+// Create multer instance for images and PDFs
 const upload = multer({
     storage: multer.memoryStorage(), // Using memory storage to handle files before sending to Cloudinary
     limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10 MB
