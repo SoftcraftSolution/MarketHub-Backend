@@ -15,7 +15,7 @@ const selfNewsSchema = new mongoose.Schema({
     },
     image: {
         type: String,
-        required: false,
+   
     },
     adminPhoneNumber: {
         type: String,
