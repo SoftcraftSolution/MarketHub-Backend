@@ -19,7 +19,7 @@ const circularNewsSchema = new mongoose.Schema({
     pdf:{
         type: String,
     },
-    adminPhoneNumber: {
+    email: {
         type: String,
       
     },

@@ -17,9 +17,9 @@ const selfNewsSchema = new mongoose.Schema({
         type: String,
    
     },
-    adminPhoneNumber: {
+    email: {
         type: String,
-        required: true,
+       
     },
     shareNews: {
         type: [String], // Change to an array of strings

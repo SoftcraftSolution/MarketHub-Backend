@@ -11,7 +11,7 @@ const { cloudinary } = require('../middleware/imageupload');
 exports.CircularNews = async (req, res) => {
     try {
         // Extract data from the request body
-        const { addTitle, addContent, addLink, adminPhoneNumber, shareNews } = req.query;
+        const { addTitle, addContent, addLink, email, shareNews } = req.query;
 
         // Parse shareNews if it's coming as a JSON string
         const shareNewsArray = Array.isArray(shareNews) ? shareNews : JSON.parse(shareNews || "[]");
@@ -57,7 +57,7 @@ exports.CircularNews = async (req, res) => {
             addTitle,
             addContent,
             addLink,
-            adminPhoneNumber,
+            email,
             shareNews: shareNewsArray,
             image: imageUrl,
             pdf: pdfUrl,
@@ -74,7 +74,7 @@ exports.CircularNews = async (req, res) => {
                 createdAt: newCircularNews.createdAt,
                 addContent: newCircularNews.addContent,
                 addLink: newCircularNews.addLink,
-                adminPhoneNumber: newCircularNews.adminPhoneNumber,
+                email: newCircularNews.email,
                 shareNews: newCircularNews.shareNews,
                 image: newCircularNews.image,
                 pdf: newCircularNews.pdf,

@@ -10,7 +10,7 @@ const { cloudinary } = require('../middleware/imageupload');
 exports.addSelfNews = async (req, res) => {
     try {
         // Extract data from the request body
-        const { addTitle, addContent, addLink, adminPhoneNumber, shareNews } = req.body;
+        const { addTitle, addContent, addLink,email,  shareNews } = req.body;
 
         // Parse shareNews if it's coming as a JSON string
         const shareNewsArray = Array.isArray(shareNews) ? shareNews : JSON.parse(shareNews || "[]");
@@ -45,7 +45,7 @@ exports.addSelfNews = async (req, res) => {
             addTitle,
             addContent,
             addLink,
-            adminPhoneNumber,
+       email,
             shareNews: shareNewsArray,
             image: imageUrl,
      
@@ -62,7 +62,7 @@ exports.addSelfNews = async (req, res) => {
                 createdAt: newSelfNews.createdAt,
                 addContent: newSelfNews.addContent,
                 addLink: newSelfNews.addLink,
-                adminPhoneNumber: newSelfNews.adminPhoneNumber,
+              email:newSelfNews.email,
                 shareNews: newSelfNews.shareNews,
                 image: newSelfNews.image,
              
