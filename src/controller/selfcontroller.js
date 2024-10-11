@@ -1,46 +1,72 @@
-const SelfNews= require('../model/selfnews.model');
-const cloudinary = require('cloudinary').v2;
-const fetch = require('node-fetch'); // Ensure you have node-fetch installed
+const SelfNews = require('../model/selfnews.model');
 
+const fetch = require('node-fetch'); // Ensure you have node-fetch installed
 const response = require('../middleware/response')
 const Admin = require('../model/user.model'); 
+const { cloudinary } = require('../middleware/imageupload');
+
+// Configure Cloudinary with environment variables
 
 exports.addSelfNews = async (req, res) => {
     try {
-        // Extract data from request body
+        // Extract data from the request body
         const { addTitle, addContent, addLink, adminPhoneNumber, shareNews } = req.body;
 
-        // Validate input fields
-        if (!addTitle || !addContent || !adminPhoneNumber) {
-            return res.status(400).json({ message: 'Title, content, and phone number are required.' });
+        // Parse shareNews if it's coming as a JSON string
+        const shareNewsArray = Array.isArray(shareNews) ? shareNews : JSON.parse(shareNews || "[]");
+
+        // Log the req.files object to see the uploaded files
+        console.log('Uploaded files:', req.files);
+
+        // Prepare to store URLs
+        let imageUrl = null;
+   
+
+        // Check if image file is present and upload to Cloudinary using buffer
+        if (req.files['image'] && req.files['image'][0]) {
+            // Upload image buffer to Cloudinary
+            const imageUploadResponse = await cloudinary.uploader.upload(`data:${req.files['image'][0].mimetype};base64,${req.files['image'][0].buffer.toString('base64')}`, {
+                folder: 'images',
+                resource_type: 'image'
+            });
+            imageUrl = imageUploadResponse.secure_url; // Get the image URL from the result
         }
 
-        // Optional: Check if the admin exists
-        const admin = await Admin.findOne({ phoneNumber: adminPhoneNumber });
-        if (!admin) {
-            return res.status(404).json({ message: 'Admin not found.' });
-        }
+        // Check if PDF file is present and upload to Cloudinary using buffer
+     
+        
+        
+        // Log the URLs obtained
+        console.log('Uploaded image URL:', imageUrl);
+      
 
-        // Ensure shareNews is an array and handle any duplicates if necessary
-        const shareNewsArray = JSON.parse(shareNews);
-
-        // Create a new SelfNews document
-        const newAddSelfNews = new SelfNews({
+        // Create a new CircularNews document
+        const newSelfNews = new SelfNews({
             addTitle,
             addContent,
             addLink,
-            image: req.file ? req.file.path : null, // Handle image if uploaded
             adminPhoneNumber,
-            shareNews: shareNewsArray, // Save the shareNews array
+            shareNews: shareNewsArray,
+            image: imageUrl,
+     
         });
 
         // Save the new document to the database
-        await newAddSelfNews.save();
+        await newSelfNews.save();
 
-        // Send a success response
+        // Send a success response with the uploaded data
         res.status(201).json({
-            message: 'News uploaded successfully',
-            addSelfNews: newAddSelfNews,
+            message: 'SelfNews uploaded successfully',
+            circularNews: {
+                addTitle: newSelfNews.addTitle,
+                createdAt: newSelfNews.createdAt,
+                addContent: newSelfNews.addContent,
+                addLink: newSelfNews.addLink,
+                adminPhoneNumber: newSelfNews.adminPhoneNumber,
+                shareNews: newSelfNews.shareNews,
+                image: newSelfNews.image,
+             
+            }
         });
     } catch (error) {
         console.error('Error while adding self news:', error); // Log the error for debugging
