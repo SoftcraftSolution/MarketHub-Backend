@@ -57,7 +57,7 @@ exports.addSelfNews = async (req, res) => {
         // Send a success response with the uploaded data
         res.status(201).json({
             message: 'SelfNews uploaded successfully',
-            circularNews: {
+            selfNews: {
                 addTitle: newSelfNews.addTitle,
                 createdAt: newSelfNews.createdAt,
                 addContent: newSelfNews.addContent,
