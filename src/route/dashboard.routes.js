@@ -1,28 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const adminController=require('../controller/admincontroller')
-const { uploadImage, uploadPdf } = require('../middleware/imageupload');
-const selfController=require('../controller/selfcontroller')
-const circularController=require('../controller/circularnewscontroller')
+const adminController = require('../controller/admincontroller');
+const { upload } = require('../middleware/imageupload');
+const selfController = require('../controller/selfcontroller');
+const circularController = require('../controller/circularnewscontroller');
+const extendedtrailController = require('../controller/extendedtrailcontroller');
+ 
 
-router.post('/register',adminController.register)
+// Admin Authentication APIs
+router.post('/register', adminController.register);
 router.post('/login', adminController.login);
+router.post('/forgot-password', adminController.forgotPassword);
+router.post('/verify-code', adminController.verifyCode);
+router.post('/reset-password', adminController.resetPassword);
+router.get('/approved-user', adminController.approveAdmin);
+router.get('/user-list', adminController.getUserList);
 
-router.post('/forgot-password',adminController.forgotPassword)
-router.post('/verify-code',adminController.verifyCode)
-router.post('/reset-password',adminController.resetPassword)
-router.get('/approved-user',adminController.approveAdmin)
-router.get('/user-list',adminController.getUserList)
+// News Section APIs
+router.post('/add-self-news', upload, selfController.addSelfNews); // Handle image upload for self news
+router.post('/circular-news', upload, circularController.CircularNews); // Handle multiple file uploads for circular news
 
-//NEWS SECTION API
+// Extended Trail API
+router.post('/extended-trail', extendedtrailController.extendedPlan);
 
-
-const multer = require('multer');
-
-// Set up multer for file uploads
-
-router.post('/add-self-news',uploadImage ,selfController.addSelfNews)
-
-router.post('/circular-news', uploadImage, circularController.CircularNews);
-
+// Export the router
 module.exports = router;
