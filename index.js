@@ -37,7 +37,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const server = http.createServer(app);
 
 
-// User Routes
+// Admin  Routes
 
 app.use('/admin',adminRoutes)
 
