@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
       type:String,
       enum:['spotPrice','news',"all"]
     }
-
+// updated vercel
 }, { timestamps: true });
 
 // Create the model from the schema
