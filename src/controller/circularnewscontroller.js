@@ -31,26 +31,27 @@ exports.CircularNews = async (req, res) => {
                 resource_type: 'image'
             });
             imageUrl = imageUploadResponse.secure_url; // Get the image URL from the result
+            console.log('Uploaded image URL:', imageUrl);
+        } else {
+            console.log('No image file uploaded.');
         }
 
         // Check if PDF file is present and upload to Cloudinary using buffer
         if (req.files['pdf'] && req.files['pdf'][0]) {
             const pdfBuffer = req.files['pdf'][0].buffer;
-            
+
             // Upload PDF to Cloudinary as raw file
             const pdfUploadResponse = await cloudinary.uploader.upload(`data:${req.files['pdf'][0].mimetype};base64,${pdfBuffer.toString('base64')}`, {
                 folder: 'pdfs',
                 resource_type: 'raw', // Correct resource type for PDFs and non-image files
                 format: 'pdf' // Ensure it gets stored as a PDF
             });
-            
+
             pdfUrl = pdfUploadResponse.secure_url; // Get the URL to access the PDF
+            console.log('Uploaded PDF URL:', pdfUrl);
+        } else {
+            console.log('No PDF file uploaded.');
         }
-        
-        
-        // Log the URLs obtained
-        console.log('Uploaded image URL:', imageUrl);
-        console.log('Uploaded PDF URL:', pdfUrl);
 
         // Create a new CircularNews document
         const newCircularNews = new CircularNews({
@@ -59,8 +60,8 @@ exports.CircularNews = async (req, res) => {
             addLink,
             email,
             shareNews: shareNewsArray,
-            image: imageUrl,
-            pdf: pdfUrl,
+            image: imageUrl, // Will be null if no image was uploaded
+            pdf: pdfUrl, // Will be null if no PDF was uploaded
         });
 
         // Save the new document to the database
@@ -76,8 +77,8 @@ exports.CircularNews = async (req, res) => {
                 addLink: newCircularNews.addLink,
                 email: newCircularNews.email,
                 shareNews: newCircularNews.shareNews,
-                image: newCircularNews.image,
-                pdf: newCircularNews.pdf,
+                image: newCircularNews.image, // Will be null if no image was uploaded
+                pdf: newCircularNews.pdf, // Will be null if no PDF was uploaded
             }
         });
     } catch (error) {
@@ -85,6 +86,7 @@ exports.CircularNews = async (req, res) => {
         res.status(500).json({ message: 'An error occurred while uploading news.' });
     }
 };
+
 
 
 
