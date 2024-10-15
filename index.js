@@ -13,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 3000; // Use port from environment variable or default to 3000
 
 // Log the MongoDB URI to check if it's defined
-console.log('MongoDB URI:', process.env.MONGODB_URI);
+
 
 // Middleware
 app.use(cors());
