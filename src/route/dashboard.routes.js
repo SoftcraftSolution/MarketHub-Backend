@@ -5,6 +5,7 @@ const { upload } = require('../middleware/imageupload');
 const selfController = require('../controller/selfcontroller');
 const circularController = require('../controller/circularnewscontroller');
 const extendedtrailController = require('../controller/extendedtrailcontroller');
+const googlesheetController=require('../controller/googlesheetcontroller')
  
 
 // Admin Authentication APIs
@@ -22,6 +23,7 @@ router.post('/circular-news', upload, circularController.CircularNews); // Handl
 
 // Extended Trail API
 router.post('/extended-trail', extendedtrailController.extendedPlan);
+router.get('/get-googlesheet',googlesheetController.getGoogleSheetData)
 
 // Export the router
 module.exports = router;
