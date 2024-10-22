@@ -1,44 +1,50 @@
-const { google } = require('googleapis');
 
+const { google } = require('googleapis');
 require('dotenv').config();
 
+// Load Google Sheets credentials from environment variable
+const sheetConfig = JSON.parse(process.env.GOOGLE_SHEET_CONFIG);
 
-// Google Sheet ID and range to fetch data
-const SHEET_ID = '12hag257BMMd-W5fNlZE-ZDiBF6p6GRgrpsp3DK6VLIk';
+// Replace escaped newlines with actual newlines in the private key
+sheetConfig.private_key = sheetConfig.private_key.replace(/\\n/g, '\n');
+
+// Load your environment variables for Spreadsheet ID
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID 
 const RANGE = 'DELHI';
 
-exports.getGoogleSheetData = async (req, res) => {
+// Authenticate using Google Sheets API
+const auth = new google.auth.GoogleAuth({
+  credentials: sheetConfig,
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
+
+// Create Sheets API instance
+const sheets = google.sheets({ version: 'v4', auth });
+
+exports.updatesheet = async (req, res) => {
   try {
-    // Authentication using Service Account
-    const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(process.env.GOOGLE_SHEET_CONFIG), // Load from environment variable
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    });
+    const { CATEGARY, TYPE, 'SUB CATEGARY': SUB_CATEGARY, PRICE } = req.body;
 
-    const client = await auth.getClient();
-    const sheets = google.sheets({ version: 'v4', auth: client });
+    // Prepare data to be appended
+    const values = [[CATEGARY, TYPE, SUB_CATEGARY, PRICE]];
 
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
+    const resource = {
+      values,
+    };
+
+    // Append data to Google Sheets
+    const result = await sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
       range: RANGE,
+      valueInputOption: 'RAW',
+      resource,
     });
 
-    const rows = response.data.values;
-    if (rows.length) {
-      return res.status(200).json({
-        message: 'Data fetched successfully',
-        data: rows,
-      });
-    } else {
-      return res.status(404).json({
-        message: 'No data found',
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching Google Sheets data:', error);
-    return res.status(500).json({
-      message: 'An error occurred while fetching data',
-      error: error.message,
+    res.status(200).send({
+      status: 'success',
+      updatedRows: result.data.updates.updatedRows,
     });
+  } catch (error) {
+    res.status(500).send({ status: 'error', message: error.message });
   }
 };
