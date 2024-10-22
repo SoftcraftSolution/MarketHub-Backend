@@ -1,9 +1,10 @@
-
 const { google } = require('googleapis');
 require('dotenv').config();
 
 // Load Google Sheets credentials from environment variable
 const sheetConfig = JSON.parse(process.env.GOOGLE_SHEET_CONFIG);
+console.log('GOOGLE_SHEET_CONFIG:', process.env.GOOGLE_SHEET_CONFIG);
+console.log('SPREADSHEET_ID:', process.env.SPREADSHEET_ID);
 
 // Replace escaped newlines with actual newlines in the private key
 sheetConfig.private_key = sheetConfig.private_key.replace(/\\n/g, '\n');
