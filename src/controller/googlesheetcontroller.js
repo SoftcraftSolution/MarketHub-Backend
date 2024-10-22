@@ -1,16 +1,35 @@
 const { google } = require('googleapis');
-require('dotenv').config();
+require('dotenv').config(); // Load environment variables
 
 // Load Google Sheets credentials from environment variable
-const sheetConfig = JSON.parse(process.env.GOOGLE_SHEET_CONFIG);
-console.log('GOOGLE_SHEET_CONFIG:', process.env.GOOGLE_SHEET_CONFIG);
+const sheetConfigStr = process.env.GOOGLE_SHEET_CONFIG;
+
+// Check if the GOOGLE_SHEET_CONFIG is set
+if (!sheetConfigStr) {
+  throw new Error('GOOGLE_SHEET_CONFIG environment variable is not set or is undefined.');
+}
+
+// Parse the JSON string and handle errors
+let sheetConfig;
+try {
+  sheetConfig = JSON.parse(sheetConfigStr);
+} catch (error) {
+  throw new Error('Error parsing GOOGLE_SHEET_CONFIG: ' + error.message);
+}
+
+// Log the loaded values for debugging
+console.log('GOOGLE_SHEET_CONFIG:', sheetConfig);
 console.log('SPREADSHEET_ID:', process.env.SPREADSHEET_ID);
 
 // Replace escaped newlines with actual newlines in the private key
-sheetConfig.private_key = sheetConfig.private_key.replace(/\\n/g, '\n');
+if (sheetConfig.private_key) {
+  sheetConfig.private_key = sheetConfig.private_key.replace(/\\n/g, '\n');
+} else {
+  throw new Error('Private key is not defined in GOOGLE_SHEET_CONFIG.');
+}
 
 // Load your environment variables for Spreadsheet ID
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID 
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const RANGE = 'DELHI';
 
 // Authenticate using Google Sheets API
@@ -22,6 +41,7 @@ const auth = new google.auth.GoogleAuth({
 // Create Sheets API instance
 const sheets = google.sheets({ version: 'v4', auth });
 
+// Function to update the Google Sheet
 exports.updatesheet = async (req, res) => {
   try {
     const { CATEGARY, TYPE, 'SUB CATEGARY': SUB_CATEGARY, PRICE } = req.body;
@@ -46,6 +66,7 @@ exports.updatesheet = async (req, res) => {
       updatedRows: result.data.updates.updatedRows,
     });
   } catch (error) {
+    console.error('Error updating Google Sheet:', error); // Log the error
     res.status(500).send({ status: 'error', message: error.message });
   }
 };
