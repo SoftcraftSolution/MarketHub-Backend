@@ -10,6 +10,13 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Log environment variables
+console.log('Environment Variables:', {
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+});
+
 // Define storage for images
 const imageStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -26,7 +33,6 @@ const pdfStorage = new CloudinaryStorage({
     params: {
         folder: 'pdfs',
         allowed_formats: ['pdf'],
-       
         public_id: (req, file) => `${Date.now()}-${file.originalname}`,
     },
 });
@@ -40,4 +46,21 @@ const upload = multer({
     { name: 'pdf', maxCount: 1 },
 ]);
 
-module.exports = { upload, cloudinary };
+// Middleware for handling uploads
+const uploadMiddleware = (req, res, next) => {
+    upload(req, res, (err) => {
+        if (err) {
+            console.error('Multer Error:', err);
+            return res.status(400).json({ message: 'Error uploading files' });
+        }
+
+        // Log request details
+        console.log('Request Method:', req.method);
+        console.log('Request Body:', req.body);
+        console.log('Request Files:', req.files);
+
+        next();
+    });
+};
+
+module.exports = { upload: uploadMiddleware, cloudinary };

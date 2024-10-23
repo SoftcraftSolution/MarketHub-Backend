@@ -5,6 +5,7 @@ const { upload } = require('../middleware/imageupload');
 const selfController = require('../controller/selfcontroller');
 const circularController = require('../controller/circularnewscontroller');
 const extendedtrailController = require('../controller/extendedtrailcontroller');
+const newsListController=require('../controller/newslistcontroller')
 
  
 
@@ -23,6 +24,7 @@ router.post('/circular-news', upload, circularController.CircularNews); // Handl
 
 // Extended Trail API
 router.post('/extended-trail', extendedtrailController.extendedPlan);
+router.get('/get-self-news',newsListController.selfnewsList)
 
 
 // Export the router
