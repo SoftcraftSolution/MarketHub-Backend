@@ -24,7 +24,8 @@ router.post('/circular-news', upload, circularController.CircularNews); // Handl
 
 // Extended Trail API
 router.post('/extended-trail', extendedtrailController.extendedPlan);
-router.get('/get-self-news',newsListController.selfnewsList)
+router.get('/get-self-news',newsListController.selfnewsList);
+router.get('/get-circular-news',newsListController.circularnewsList);
 
 
 // Export the router
