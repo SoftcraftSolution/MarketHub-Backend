@@ -128,7 +128,7 @@ exports.login = async (req, res) => {
       // Generate a JWT token with the admin's email and role
       const token = jwt.sign(
         { email: admin.email }, // You can also add other fields like role if necessary
-        process.env.JWT_SECRET, // Ensure JWT_SECRET is stored in your .env file
+        'mySuperSecretKey123!', // Ensure JWT_SECRET is stored in your .env file
         { expiresIn: '1h' } // Token expiration time
       );
   
