@@ -57,7 +57,7 @@ const generateRandomPassword = () => {
   
   exports.register = async (req, res) => {
     try {
-      const { email, phoneNumber, access, role } = req.body;
+      const {fullName, email, phoneNumber, access, role } = req.body;
   
       // Check if the email is already registered
       const existingAdmin = await Admin.findOne({ email });
@@ -73,6 +73,7 @@ const generateRandomPassword = () => {
   
       // Create a new admin
       const newAdmin = new Admin({
+        fullName,
         email,
         phoneNumber,
         access,

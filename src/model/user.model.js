@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 // Define the registration schema with timestamps
 const UserSchema = new mongoose.Schema({
+  fullName:{
+    type:String,
+  },
     email: {
         type: String,
         required: true,
