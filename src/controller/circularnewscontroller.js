@@ -104,6 +104,31 @@ exports.getNewsList = async (req, res) => {
         res.status(500).json({ message: 'An error occurred while fetching news listings.' });
     }
 };
+exports.getInsightNews = async (req, res) => {
+    try {
+        // Fetch all CircularNews and SelfNews from the database
+        const circularNewsList = await CircularNews.find();
+        const selfNewsList = await selfnews.find();
+
+        // Count total CircularNews and SelfNews documents
+        const totalCircularNews = circularNewsList.length;
+        const totalSelfNews = selfNewsList.length;
+        const totalNewsCount = totalCircularNews + totalSelfNews;
+
+        // Return the combined response with counts
+        res.status(200).json({
+            message: 'News listing retrieved successfully',
+            counts: {
+                totalCircularNews,
+                totalSelfNews,
+                totalNewsCount // Combined total of both CircularNews and SelfNews
+            }
+        });
+    } catch (error) {
+        console.error('Error while fetching news listings:', error);
+        res.status(500).json({ message: 'An error occurred while fetching news listings.' });
+    }
+};
 
 
 
