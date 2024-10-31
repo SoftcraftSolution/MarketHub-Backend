@@ -29,6 +29,7 @@ router.get('/get-self-news',newsListController.selfnewsList);
 router.get('/get-circular-news',newsListController.circularnewsList);
 router.post('/technical-news',upload,technicalNewsController.technicalNews);
 router.get('/get-technical-news',technicalNewsController.technicalNewsList)
+router.get('/get-news-list',circularController.getNewsList)
 
 
 // Export the router

@@ -3,6 +3,7 @@ const CircularNews = require('../model/circularnews.model');
 const multer = require('multer');
 const Admin = require('../model/user.model'); 
 const { cloudinary } = require('../middleware/imageupload');
+const selfnews=require('../model/selfnews.model')
 
 
 
@@ -86,7 +87,23 @@ exports.CircularNews = async (req, res) => {
         res.status(500).json({ message: 'An error occurred while uploading news.' });
     }
 };
+exports.getNewsList = async (req, res) => {
+    try {
+        // Fetch CircularNews and SelfNews from the database
+        const circularNewsList = await CircularNews.find();
+        const selfNewsList = await selfnews.find();
 
+        // Return a combined response
+        res.status(200).json({
+            message: 'News listing retrieved successfully',
+            circularNews: circularNewsList,
+            selfNews: selfNewsList
+        });
+    } catch (error) {
+        console.error('Error while fetching news listings:', error);
+        res.status(500).json({ message: 'An error occurred while fetching news listings.' });
+    }
+};
 
 
 
