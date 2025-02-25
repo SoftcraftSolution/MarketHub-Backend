@@ -19,6 +19,7 @@ router.post('/verify-code', adminController.verifyCode);
 router.post('/reset-password', adminController.resetPassword);
 router.get('/approved-user', adminController.approveAdmin);
 router.get('/user-list', adminController.getUserList);
+router.delete('/delete-admin', adminController.deleteUser);
 
 // News Section APIs
 router.post('/add-self-news', upload, selfController.addSelfNews); // Handle image upload for self news

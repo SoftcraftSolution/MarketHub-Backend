@@ -291,6 +291,31 @@ exports.getUserList = async (req, res) => {
     }
 };
 
+exports.deleteUser = async (req, res) => {
+  try {
+      const { id } = req.query;
+
+      // Agar ID nahi di gayi toh error response bhejein
+      if (!id) {
+          return res.status(400).json({ message: 'User ID is required' });
+      }
+
+      // Database se user delete karein
+      const deletedUser = await Admin.findByIdAndDelete(id);
+
+      if (!deletedUser) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json({
+          message: 'User deleted successfully',
+          deletedUser
+      });
+  } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: 'Error deleting user' });
+  }
+};
 
 
 
